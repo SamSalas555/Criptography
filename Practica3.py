@@ -1,50 +1,34 @@
-# Para interfaz grafica
+# Grafic Interface libraries
 from tkinter import *
 from tkinter import filedialog as fd
 from tkinter import messagebox
-#Para usar este proyecto debe instalarse la libreria pycryptodome
-#pip install pycryptodome
+#Cryptographic library used 
 from Crypto.Cipher import DES
-from Crypto.Random import get_random_bytes
+from Crypto.Protocol.KDF import PBKDF2
+import hashlib
+
 
 data = []
 # Clave de 8 bytes para DES (debe ser secreta)
-llave_usuario = get_random_bytes(8)
-llave_usuario = b'g<=\xfd=\xf7\x8b\xf0'
+user_key = b'g<=\xfd=\xf7\x8b\xf0'
 
-# Función para rellenar el mensaje para que sea múltiplo de 8 bytes
+
+def get_key_from_string(string_key):
+    # Convert string into bytes using a codec 
+    string_bytes = string_key.encode('utf-8')
+    
+    # Use PBKDF2 to derivate a key from String
+    derivated_key = PBKDF2(string_bytes, b'', dkLen=8, count=1000000, prf=lambda p, s: hashlib.sha256(s + p).digest())
+    
+    return derivated_key
+
+# Function to fill the message to 8 bites size
 def pad_message(message):
     padding = b' ' * (8 - (len(message) % 8))
     return message + padding
 
-# Función para cifrar un mensaje utilizando DES
-def encrypt_message(key, message):
-    cipher = DES.new(key, DES.MODE_ECB)
-    encrypted_message = cipher.encrypt(pad_message(message))
-    return encrypted_message
-
-# Función para descifrar un mensaje cifrado utilizando DES
-def decrypt_message(key, encrypted_message):
-    cipher = DES.new(key, DES.MODE_ECB)
-    decrypted_message = cipher.decrypt(encrypted_message)
-    return decrypted_message.rstrip(b' ')
-
-# Clave de 8 bytes para DES (debe ser secreta)
-key = get_random_bytes(8)
-
-# Mensaje que deseas cifrar
-mensaje_original = "Hola, este es un mensaje secreto."
-
-# Cifrar el mensaje
-mensaje_cifrado = encrypt_message(key, mensaje_original.encode('utf-8'))
-print("Mensaje cifrado:", mensaje_cifrado)
-
-# Descifrar el mensaje
-mensaje_descifrado = decrypt_message(key, mensaje_cifrado)
-print("Mensaje descifrado:", mensaje_descifrado.decode('utf-8'))
-
 def select_file():
-    """data[2] = ruta absoluta del archivo"""
+    """data[2] = ruta absoluta del data_file"""
     filetypes = (
         ('text files', '*.txt'),
         ('All files', '*.*')
@@ -57,59 +41,54 @@ def select_file():
     # ABSOLUTE PATH
     # data[2]
     data.append(filename)
-    messagebox.showinfo(title="Notificacion", message="Su archivo ha sido seleccionado")
+    messagebox.showinfo(title="Notificacion", message="Su data_file ha sido seleccionado")
     print(filename)
 
-def cifrar(llave, direccion_archivo):
-    with open(direccion_archivo) as archivo:
-        mensaje_original = archivo.read()
-
-    # Cifrar el mensaje
-    texto_cifrado = encrypt_message(llave, mensaje_original.encode('utf-8'))
-    # Cadena que sera nombre de nuevo archivo
-    nombre_de_archivo_cifrado = "".join([char for char in direccion_archivo[:-4]])
-    #se crea en directorio de archivo original
+def encrypt_des(key_des, file_d):
+    #Read the file to encript
+    with open(file_d) as data_file:
+        message = data_file.read()
+    cipher = DES.new(key_des, DES.MODE_ECB)
+    encrypted_message = cipher.encrypt(pad_message(message.encode('utf-8')))
+    # New file name
+    nombre_de_archivo_cifrado = "".join([char for char in file_d[:-4]])
+    #It gets created in the same directory as the original file
     with open(f"{nombre_de_archivo_cifrado}_c.txt", mode="wb") as file:
-        # escribir texto cifrado en archivo nuevo
-        file.write(texto_cifrado)
+        # Write encrypted data into new file
+        file.write(encrypted_message)
+    print(encrypted_message)
 
-    print(texto_cifrado)
-def decifrar(llave, direccion_archivo):
-        with open(direccion_archivo, 'rb') as archivo:
-            texto_cifrado = archivo.read()
-        # TODO:LLAVE USUARIO
-        # Desencriptar el mensaje
-        texto_decifrado = decrypt_message(llave_usuario, texto_cifrado)
-
-        # Nombre del archivo decifrado
-        nombre_de_archivo_decifrado = "".join([char for char in direccion_archivo[:-4]])
-
+def decrypt_des(key_des, file_d):
+        with open(file_d, 'rb') as data_file:
+            encrypted_message = data_file.read()
+        cipher = DES.new(key_des, DES.MODE_ECB)
+        decrypted_message = cipher.decrypt(encrypted_message)
+        # Nombre del data_file decifrado
+        nombre_de_archivo_decifrado = "".join([char for char in file_d[:-4]])
         # Intentar decodificar los datos binarios como UTF-8
-        texto_decodificado = texto_decifrado.decode('utf-8')
-
-        # Crear un nuevo archivo con extensión .dec para almacenar el texto decifrado
+        decoded_text = decrypted_message.decode('utf-8')
+        # Crear un nuevo data_file con extensión .dec para almacenar el texto decifrado
         with open(f"{nombre_de_archivo_decifrado}_d.txt", mode="w") as file:
-            file.write(texto_decodificado)
-
-        print(texto_decodificado)
+            file.write(decoded_text)
+        print(decoded_text)
 
 def accion():
-    # data = opcion, filepath, llave
-    data.append(int(llave.get()))  #data[2]
-    #Radio Button = 1 cifrar
+    # data = opcion, filepath, key_des
+    data.append(int(key_des.get()))  #data[2]
+    #Radio Button = 1 encrypt_des
     if data[0] == 1:
-        # data[2] -> llave, data[1] -> direccion de archivo(ruta absoluta)
+        # data[2] -> key_des, data[1] -> direccion de data_file(ruta absoluta)
         #TODO: LLAVE Usuario
-        # cifrar(data[2], data[1])
-        cifrar(llave_usuario, data[1])
-        messagebox.showinfo(title="Notificacion", message=f"Su archivo ha sido cifrado.")
+        # encrypt_des(data[2], data[1])
+        encrypt_des(user_key, data[1])
+        messagebox.showinfo(title="Notificacion", message=f"Su data_file ha sido cifrado.")
 
-    #Radio Button = 2 decifrar
+    #Radio Button = 2 decrypt_des
     else:
         #TODO: Llave Usuario
-        # decifrar(data[2], data[1])
-        decifrar(llave_usuario, data[1])
-        messagebox.showinfo(title="Notificacion", message=f"Su archivo ha sido decifrado.")
+        # decrypt_des(data[2], data[1])
+        decrypt_des(user_key, data[1])
+        messagebox.showinfo(title="Notificacion", message=f"Su data_file ha sido decifrado.")
     print(data)
     data.clear()
 def selec():
@@ -137,8 +116,8 @@ llave_label = Label(text="Llave:", font=("Arial", 12, "normal"), background="#E1
 llave_entry = Entry()
 llave_label.grid(column=1, row=3)
 
-llave = Entry()
-llave.grid(column=2, row=3, columnspan=2, pady=20)
+key_des = Entry()
+key_des.grid(column=2, row=3, columnspan=2, pady=20)
 
 open_button = Button(text="Selecciona un archivo", command=select_file, width=20)
 open_button.grid(column=1, row=4, columnspan=3)
