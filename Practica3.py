@@ -21,7 +21,7 @@ def decrypt_message(key, encrypted_message):
     return decrypted_message.rstrip(b' ')
 
 # Clave de 8 bytes para DES (debe ser secreta)
-key = get_random_bytes(8)
+key = b'HOLALALO'
 
 # Mensaje que deseas cifrar
 mensaje_original = "Hola, este es un mensaje secreto."
