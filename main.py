@@ -59,12 +59,23 @@ def fdescifrado1():
     b = int(entrada_b.get())
 
     a_inv = encontrar_inverso_multiplicativo(alpha, n)
-    b_inv_adit = n - b
+    b_inv_adit = (n - (b%n))%n
     salida_fdescifrado1.insert(0, f'p = {a_inv} [ C + ({b_inv_adit})] mod {n}')
+
+def fdescifrado2():
+    salida_fdescifrado2.delete(0, tk.END)
+    n = int(entrada_n.get())
+    alpha = int(entrada_a.get())
+    b = int(entrada_b.get())
+
+    a_inv = encontrar_inverso_multiplicativo(alpha, n)
+    b_inv_adit = (n - (b%n))%n
+    salida_fdescifrado2.insert(0, f'p = {a_inv}  (C + {b_inv_adit}) mod {n}')
 
 def funciones_cifrado_descifrado():
     fcifrado()
     fdescifrado1()
+    fdescifrado2()
 
 
 
