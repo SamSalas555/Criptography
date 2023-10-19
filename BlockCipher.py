@@ -4,7 +4,8 @@ from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import messagebox
-
+from PIL import Image
+import sys
 
 cipher_modes={
     "ECB":AES.MODE_ECB,
@@ -30,36 +31,64 @@ def cifrar_archivo():
     ruta_archivo = entrada_ruta.get()
     contraseña = entrada_contraseña.get()
     modo = cipher_modes[modo_encrypt.get()]
-    print(modo)
-    
     if not ruta_archivo or not contraseña:
         tk.messagebox.showerror("Error", "Por favor, ingrese la ruta del archivo y la contraseña.")
         return
 
     try:
         iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
-        cipher = AES.new(contraseña.encode(), modo, iv)
-
-        with open(ruta_archivo, 'rb') as archivo_entrada:
-            datos = archivo_entrada.read()
-            datos = agregar_relleno(datos)
-
-        datos_cifrados = cipher.encrypt(datos)
-
-        with open(ruta_archivo, 'wb') as archivo_salida:
-            archivo_salida.write(datos_cifrados)
+        cipher = AES.new(contraseña.encode(), modo)
+        datos = colors_to_bytes(ruta_archivo)
+        datos_cifrados = cipher.encrypt(agregar_relleno(datos))
+        img_salida = bytes_to_image(datos_cifrados)
+        print("M3q")
+        img_salida.save("img_c.bmp")
 
         tk.messagebox.showinfo("Éxito", "El archivo se cifró correctamente.")
     except Exception as e:
         tk.messagebox.showerror("Error", f"Ocurrió un error al cifrar el archivo: {str(e)}")
 
+
 def agregar_relleno(datos):
     tamaño_bloque = 16
     longitud_datos = len(datos)
     cantidad_relleno = tamaño_bloque - (longitud_datos % tamaño_bloque)
-    relleno = bytes([cantidad_relleno]) * cantidad_relleno
+    relleno = bytes([0] * cantidad_relleno)
     datos_con_relleno = datos + relleno
     return datos_con_relleno
+
+
+def colors_to_bytes(uri_image):
+    byte_data = bytearray()
+    img = Image.open(uri_image)
+    ancho, alto = img.size
+    pixeles = img.load()
+
+    for x in range(ancho):
+        for y in range(alto):
+            color = pixeles[x, y]
+            byte_data.append(color[0])
+            byte_data.append(color[1])
+            byte_data.append(color[2])
+    return bytes(byte_data)
+
+
+def bytes_to_image(data):
+    width, height = 1152, 648
+    img = Image.new("RGB", (width, height))
+    pixels = img.load()
+    index = 0
+    print("Andamos aqui")
+    for x in range(width):
+        for y in range(height):
+            if index + 2 < len(data):
+                r = data[index]
+                g = data[index + 1]
+                b = data[index + 2]
+                pixels[x, y] = (r, g, b)
+                index += 3
+    return img
+
 
 
 
