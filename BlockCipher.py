@@ -37,7 +37,7 @@ def cifrar_archivo():
 
     try:
         iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
-        cipher = AES.new(contraseña.encode(), modo)
+        cipher = AES.new(contraseña.encode(), modo,iv)
         datos = colors_to_bytes(ruta_archivo)
         datos_cifrados = cipher.encrypt(agregar_relleno(datos))
         img_salida = bytes_to_image(datos_cifrados)
@@ -48,6 +48,28 @@ def cifrar_archivo():
     except Exception as e:
         tk.messagebox.showerror("Error", f"Ocurrió un error al cifrar el archivo: {str(e)}")
 
+def decifrar_archivo():
+    global entrada_ruta, entrada_contraseña, modo_encrypt
+    
+    ruta_archivo = entrada_ruta.get()
+    contraseña = entrada_contraseña.get()
+    modo = cipher_modes[modo_encrypt.get()]
+    if not ruta_archivo or not contraseña:
+        tk.messagebox.showerror("Error", "Por favor, ingrese la ruta del archivo y la contraseña.")
+        return
+
+    try:
+        iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
+        cipher = AES.new(contraseña.encode(), modo,iv)
+        datos = colors_to_bytes(ruta_archivo)
+        datos_cifrados = cipher.decrypt(agregar_relleno(datos))
+        img_salida = bytes_to_image(datos_cifrados)
+        print("M3q")
+        img_salida.save("img_d.bmp")
+
+        tk.messagebox.showinfo("Éxito", "El archivo se cifró correctamente.")
+    except Exception as e:
+        tk.messagebox.showerror("Error", f"Ocurrió un error al cifrar el archivo: {str(e)}")
 
 def agregar_relleno(datos):
     tamaño_bloque = 16
@@ -123,7 +145,7 @@ def main():
     entrada_ruta.grid(column=2, row=5)
     tk.Button(window, text="Explorar", font=("Arial", 10, "normal"),command=seleccionar_archivo).grid(column=1, columnspan= 3, row=6, pady=20)
 
-    tk.Button(window, text="Realizar Acción", font=("Arial", 10, "normal"),command=cifrar_archivo).grid(column=3, row=7)
+    tk.Button(window, text="Realizar Acción", font=("Arial", 10, "normal"),command=decifrar_archivo).grid(column=3, row=7)
 
     window.mainloop()
 
