@@ -36,12 +36,14 @@ def cifrar_archivo():
         return
 
     try:
+        #TODO: Quitar el vector de inicio en la funcion que no corresponde, se recomienda un IF
         iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
         cipher = AES.new(contraseña.encode(), modo,iv)
         datos = colors_to_bytes(ruta_archivo)
         datos_cifrados = cipher.encrypt(agregar_relleno(datos))
         img_salida = bytes_to_image(datos_cifrados)
         print("M3q")
+        #TODO: Quitar mensajes de debugging y corregir nombre de los archivos para que tengan la extencion correcta
         img_salida.save("img_c.bmp")
 
         tk.messagebox.showinfo("Éxito", "El archivo se cifró correctamente.")
@@ -59,12 +61,14 @@ def decifrar_archivo():
         return
 
     try:
+        #TODO: Quitar el vector de inicio en la funcion que no corresponde, se recomienda un IF
         iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
         cipher = AES.new(contraseña.encode(), modo,iv)
         datos = colors_to_bytes(ruta_archivo)
         datos_cifrados = cipher.decrypt(agregar_relleno(datos))
         img_salida = bytes_to_image(datos_cifrados)
         print("M3q")
+        #TODO: Quitar mensajes de debugging y corregir nombre de los archivos para que tengan la extencion correcta
         img_salida.save("img_d.bmp")
 
         tk.messagebox.showinfo("Éxito", "El archivo se cifró correctamente.")
@@ -126,6 +130,7 @@ def main():
 
     opcion_var = tk.IntVar()  # Como StringVar pero en entero
     opcion_var.set(1)  # Establecer encriptación como opción predeterminada
+    #TODO: Usar el checkbox para determinar la operación
 
     selec_accion = tk.Label(window, text="Seleccionar Acción:",font=("Arial", 12, "normal"), background="#E1FFEE")
     selec_accion.grid(column=1, row=1)
@@ -151,3 +156,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
