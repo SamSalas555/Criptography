@@ -1,4 +1,5 @@
 from Crypto.Cipher import  AES
+from tkinter import *
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog as fd
@@ -6,23 +7,59 @@ from tkinter import messagebox
 
 
 cipher_modes={
-    1:AES.MODE_ECB,
-    2:AES.MODE_CBC,
-    3:AES.MODE_CFB,
-    4:AES.MODE_OFB
+    "ECB":AES.MODE_ECB,
+    "CBC":AES.MODE_CBC,
+    "CFB":AES.MODE_CFB,
+    "OFB":AES.MODE_OFB
 }
 
 def seleccionar_archivo():
     global entrada_ruta
     ruta_archivo = fd.askopenfilename(
         title='Abrir un archivo',
-        initialdir='/',
-        filetypes=[('Archivos de texto', '*.txt'), ('Todos los archivos', '*.*')]
+        initialdir='./',
+        filetypes=[('Archivos de imagen', '*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.tif;*.tiff'), ('Todos los archivos', '*.*')]
     )
     if ruta_archivo:
         entrada_ruta.delete(0, tk.END)
         entrada_ruta.insert(0, ruta_archivo)
 
+def cifrar_archivo():
+    global entrada_ruta, entrada_contraseña, modo_encrypt
+    
+    ruta_archivo = entrada_ruta.get()
+    contraseña = entrada_contraseña.get()
+    modo = cipher_modes[modo_encrypt.get()]
+    print(modo)
+    
+    if not ruta_archivo or not contraseña:
+        tk.messagebox.showerror("Error", "Por favor, ingrese la ruta del archivo y la contraseña.")
+        return
+
+    try:
+        iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
+        cipher = AES.new(contraseña.encode(), modo, iv)
+
+        with open(ruta_archivo, 'rb') as archivo_entrada:
+            datos = archivo_entrada.read()
+            datos = agregar_relleno(datos)
+
+        datos_cifrados = cipher.encrypt(datos)
+
+        with open(ruta_archivo, 'wb') as archivo_salida:
+            archivo_salida.write(datos_cifrados)
+
+        tk.messagebox.showinfo("Éxito", "El archivo se cifró correctamente.")
+    except Exception as e:
+        tk.messagebox.showerror("Error", f"Ocurrió un error al cifrar el archivo: {str(e)}")
+
+def agregar_relleno(datos):
+    tamaño_bloque = 16
+    longitud_datos = len(datos)
+    cantidad_relleno = tamaño_bloque - (longitud_datos % tamaño_bloque)
+    relleno = bytes([cantidad_relleno]) * cantidad_relleno
+    datos_con_relleno = datos + relleno
+    return datos_con_relleno
 
 
 
@@ -48,14 +85,16 @@ def main():
     entrada_contraseña = tk.Entry(window, show="*")
     entrada_contraseña.grid(column=2, row=3)
     tk.Label(window,text="Modo de cifrado", font=("Arial", 12, "normal"), background="#E1FFEE").grid(column=1,row=4) 
-    modo_encrypt = ttk.Combobox(window,values=["CBC","CBF","CFB","OFB"]).grid(column=2,row=4)
-    
+    modo_encrypt = ttk.Combobox(window,values=list(cipher_modes.keys()))
+    modo_encrypt.grid(column=2,row=4)
+    print(modo_encrypt.get())
+    mode = modo_encrypt
     tk.Label(window, text="Seleccionar Archivo:", font=("Arial", 12, "normal"),  background="#E1FFEE").grid(column=1, row=5)
     entrada_ruta = tk.Entry(window)
     entrada_ruta.grid(column=2, row=5)
     tk.Button(window, text="Explorar", font=("Arial", 10, "normal"),command=seleccionar_archivo).grid(column=1, columnspan= 3, row=6, pady=20)
 
-    tk.Button(window, text="Realizar Acción", font=("Arial", 10, "normal")).grid(column=3, row=7)
+    tk.Button(window, text="Realizar Acción", font=("Arial", 10, "normal"),command=cifrar_archivo).grid(column=3, row=7)
 
     window.mainloop()
 
