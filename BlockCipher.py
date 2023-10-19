@@ -12,6 +12,16 @@ cipher_modes={
     4:AES.MODE_OFB
 }
 
+def seleccionar_archivo():
+    global entrada_ruta
+    ruta_archivo = fd.askopenfilename(
+        title='Abrir un archivo',
+        initialdir='/',
+        filetypes=[('Archivos de texto', '*.txt'), ('Todos los archivos', '*.*')]
+    )
+    if ruta_archivo:
+        entrada_ruta.delete(0, tk.END)
+        entrada_ruta.insert(0, ruta_archivo)
 
 
 
@@ -38,13 +48,12 @@ def main():
     entrada_contraseña = tk.Entry(window, show="*")
     entrada_contraseña.grid(column=2, row=3)
     tk.Label(window,text="Modo de cifrado", font=("Arial", 12, "normal"), background="#E1FFEE").grid(column=1,row=4) 
-    ttk.Combobox(window,values=["CBC","CBF","CFB","OFB"]).grid(column=2,row=4)
-
-
+    modo_encrypt = ttk.Combobox(window,values=["CBC","CBF","CFB","OFB"]).grid(column=2,row=4)
+    
     tk.Label(window, text="Seleccionar Archivo:", font=("Arial", 12, "normal"),  background="#E1FFEE").grid(column=1, row=5)
     entrada_ruta = tk.Entry(window)
     entrada_ruta.grid(column=2, row=5)
-    tk.Button(window, text="Explorar", font=("Arial", 10, "normal")).grid(column=1, columnspan= 3, row=6, pady=20)
+    tk.Button(window, text="Explorar", font=("Arial", 10, "normal"),command=seleccionar_archivo).grid(column=1, columnspan= 3, row=6, pady=20)
 
     tk.Button(window, text="Realizar Acción", font=("Arial", 10, "normal")).grid(column=3, row=7)
 
