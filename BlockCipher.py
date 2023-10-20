@@ -1,4 +1,6 @@
-from Crypto.Cipher import  AES
+import os
+
+from Crypto.Cipher import AES
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
@@ -36,15 +38,24 @@ def cifrar_archivo():
         return
 
     try:
-        #TODO: Quitar el vector de inicio en la funcion que no corresponde, se recomienda un IF
-        iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
-        cipher = AES.new(contraseña.encode(), modo,iv)
+
+        # Obtener la extensión del archivo original
+        nombre_base, extension = os.path.splitext(ruta_archivo)
+
+        if modo == AES.MODE_ECB:
+            cipher = AES.new(contraseña.encode(), modo)
+        else:
+
+            iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
+            cipher = AES.new(contraseña.encode(), modo, iv)
+
         datos = colors_to_bytes(ruta_archivo)
         datos_cifrados = cipher.encrypt(agregar_relleno(datos))
         img_salida = bytes_to_image(datos_cifrados)
         print("M3q")
-        #TODO: Quitar mensajes de debugging y corregir nombre de los archivos para que tengan la extencion correcta
-        img_salida.save("img_c.bmp")
+        nueva_ruta_archivo = nombre_base + "_c" + extension  # Agregar _c antes de la extensión
+
+        img_salida.save(nueva_ruta_archivo)
 
         tk.messagebox.showinfo("Éxito", "El archivo se cifró correctamente.")
     except Exception as e:
@@ -55,22 +66,25 @@ def decifrar_archivo():
     
     ruta_archivo = entrada_ruta.get()
     contraseña = entrada_contraseña.get()
+
+    # Obtener la extensión del archivo original
+    nombre_base, extension = os.path.splitext(ruta_archivo)
     modo = cipher_modes[modo_encrypt.get()]
     if not ruta_archivo or not contraseña:
         tk.messagebox.showerror("Error", "Por favor, ingrese la ruta del archivo y la contraseña.")
         return
 
     try:
-        #TODO: Quitar el vector de inicio en la funcion que no corresponde, se recomienda un IF
-        iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
-        cipher = AES.new(contraseña.encode(), modo,iv)
+        if modo == AES.MODE_ECB:
+            cipher = AES.new(contraseña.encode(), modo)  # Cuando es ECB no enviar parametrp iv
+        else:
+            iv = b'0123456789012345'  # Vector de inicialización fijo para AES (debe tener 16 bytes)
+            cipher = AES.new(contraseña.encode(), modo,iv) # Cuando es ECB no enviar parametrp iv
         datos = colors_to_bytes(ruta_archivo)
         datos_cifrados = cipher.decrypt(agregar_relleno(datos))
         img_salida = bytes_to_image(datos_cifrados)
-        print("M3q")
-        #TODO: Quitar mensajes de debugging y corregir nombre de los archivos para que tengan la extencion correcta
-        img_salida.save("img_d.bmp")
-
+        nueva_ruta_archivo = nombre_base + "_d" + extension  # Agregar _d antes de la extensión
+        img_salida.save(nueva_ruta_archivo)
         tk.messagebox.showinfo("Éxito", "El archivo se cifró correctamente.")
     except Exception as e:
         tk.messagebox.showerror("Error", f"Ocurrió un error al cifrar el archivo: {str(e)}")
@@ -116,7 +130,12 @@ def bytes_to_image(data):
     return img
 
 
-
+def relizar_accion():
+    accion = opcion_var.get()
+    if accion == 1:
+        cifrar_archivo()
+    elif accion == 2:
+        decifrar_archivo()
 
 def main():
     global opcion_var, entrada_contraseña, entrada_ruta, modo_encrypt
@@ -130,7 +149,6 @@ def main():
 
     opcion_var = tk.IntVar()  # Como StringVar pero en entero
     opcion_var.set(1)  # Establecer encriptación como opción predeterminada
-    #TODO: Usar el checkbox para determinar la operación
 
     selec_accion = tk.Label(window, text="Seleccionar Acción:",font=("Arial", 12, "normal"), background="#E1FFEE")
     selec_accion.grid(column=1, row=1)
@@ -150,7 +168,9 @@ def main():
     entrada_ruta.grid(column=2, row=5)
     tk.Button(window, text="Explorar", font=("Arial", 10, "normal"),command=seleccionar_archivo).grid(column=1, columnspan= 3, row=6, pady=20)
 
-    tk.Button(window, text="Realizar Acción", font=("Arial", 10, "normal"),command=decifrar_archivo).grid(column=3, row=7)
+
+    # TODO: Realizar accion
+    tk.Button(window, text="Realizar Acción", font=("Arial", 10, "normal"),command=relizar_accion).grid(column=3, row=7)
 
     window.mainloop()
 
