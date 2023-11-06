@@ -99,8 +99,6 @@ def matriz_inversa():
     # print(adjunta)
 
 
-#TODO: Debemos de sacar el inverso multiplicativo de 1/modulo y luego multiplicar ese valor por cada cofactor para despues sacarle el módulo
-
 def matriz_final():
     global tam_matriz, matriz_res
     if radio_state.get() == 2:
